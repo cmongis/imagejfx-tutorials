@@ -17,13 +17,13 @@ Maven is the dependancy management software. It's also included in Netbeans. It 
 
 #### Exercise 1
 
-Create a Maven project with Netbeans (Not a JavaFX project) and add the libraries ControlsFX and scijava-common as dependancy.
+Create a Maven Java Application project with Netbeans and add the libraries ControlsFX and scijava-common as dependancy.
 
 ### Github
 
 Github allows us to share code modification among a group of people. It's fairly used in the project.
 
-For github, introduction, the internet is full of them. I would advice you to have a deep understanding of the concepts **commit**, **branch** and **checkout**. You should be able to tell exactly what happen during each of these processes. A lot of time can be lost because of misunderstanding of the Git machinery, making he team spend more time trying to recover lost changes and conflicted files.
+For Github introduction, the internet is full of them. I would advice you to have a deep understanding of the concepts **commit**, **branch** and **checkout**. You should be able to tell exactly what happen during each of these processes. A lot of time can be lost because of misunderstanding of the Git machinery, making he team spend more time trying to recover lost changes and solve conflicts.
 
 #### Exercise 2
 
@@ -54,7 +54,7 @@ Property<String> nameProperty = ...
 
 property.addChangeListener(new ChangeListener<String>() {
 
-	public void change(Observable obs, String oldValue, String newValue) {
+	public void changed(Observable obs, String oldValue, String newValue) {
 		
 		// do some process wit the changed values
 	
@@ -162,18 +162,25 @@ Publish it on your imagejfx-training github account.
 
  - Create a complete diagram displaying the different interactions and consequences of the interactions on the model and on the interface (stay far from any implementation details)
  - Create a separate class that contains the whole the model
- - Use interfaces
+ - Use interfaces to specify the model
  - Put padding inside your interface to let it breath
 
 ## SciJava
 
 SciJava is a scientific platform allowing you to deal with plugins and dependancy injection.
 
+### How it works
+
+### Important services
+
+#### EventService
+
+#### PluginService
+
 ### Create a Service
 
 ### Create your own plugin
 
-### Starting the context
 
 #### Excercise 4
 
@@ -220,7 +227,5 @@ UiPlugin allows you to display panels on the side of the screen in specific cont
 A project is an interface that contains planes. To each plane is associated a set of metadata.
 
 ## Project Cards
-
-###
 
 
