@@ -27,7 +27,7 @@ For github, introduction, the internet is full of them. I would advice you to ha
 
 #### Exercise 2
 
-Create a Github account and a repository called **imagejfx-training**. I will evaluate your work from this repository. Commit your maven project on this repository using Netbeans.
+Create a Github account and a repository called **imagejfx-training**. You will commit the exercises there so I can evaluate them. Commit your maven project to this repository using Netbeans.
 
 ## Java basics
 
@@ -53,9 +53,10 @@ The classic code to add a listener to a property would be :
 Property<String> nameProperty = ...
 
 property.addChangeListener(new ChangeListener<String>() {
-	public void handleEvent(Observable obs, String oldValue, String newValue) {
+
+	public void change(Observable obs, String oldValue, String newValue) {
 		
-		// do some process	
+		// do some process wit the changed values
 	
 	}
 });
@@ -80,7 +81,7 @@ public class MyClass() {
 }
 ~~~
 
-It's quite useful in debugging mode and allow to keep the code well organized inside the controller.
+You'll see later that it's quite useful in debugging mode and keeps the code well organized inside the controller.
 
 ### Streams
 Streams are pretty useful to go through list of event and execute parallel processing.
@@ -134,8 +135,6 @@ areAllFilesDirecotories.setOnSucceed(event->{
 new Thread(areAllFilesDirectories).start();
 
 ~~~
-
-ImageJFX proposes an alternative to Task (which extends Task) but requires a bit less code.
 
 
 ## JavaFX and FXML
