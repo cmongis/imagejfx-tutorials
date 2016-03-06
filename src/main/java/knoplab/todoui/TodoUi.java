@@ -31,10 +31,19 @@ import knoplab.todo.TodoService;
  */
 public class TodoUi extends BorderPane {
 
+    // Service containing the model
     TodoService todoService = new DefaultTodoService();
 
+    // It's called a ViewModel.
+    // It contains TodoTaskWrappers. 
+    // This object basically implement the TodoTask interface
+    // and wrap a existing task while adding javafx properties
+    // to the object. Properties can be bound by the view
+    // and any change of a TodoTaskWrapper will be automatically
+    // synced with the view.
     ObservableList<TodoTaskWrapper> taskList = FXCollections.observableArrayList();
 
+    
     @FXML
     TextField textField; // note that it's okay to have such a simple name if your controller only contains one text field
 
@@ -46,29 +55,51 @@ public class TodoUi extends BorderPane {
 
     public TodoUi() throws IOException {
 
-        // this method allows you to use Controller as main class and UI element
+        // To sum up, we extends a BorderPane and we inject an FXML
+        // inside it.
+        // In this way, the Java class become the center point, not the FXML.
+        
         // Be careful that the option use fx:root is ticked in the SceneBuilder
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/knoplab/todoui/TodoUi.fxml"));
         loader.setRoot(this);
         loader.setController(this);
-
         loader.load();
 
-        // initializing the service;
+        
+        
+        
+        
+        // We created a Service that emit specific Events of our
+        // construction (See knoplab.todo package)
+        // We have TodoEvent and Todo Event types.
+        // A listener is just an object of type Consumer which
+        // is a Functionnal Interface. Since we want the controller
+        // to react to these events, we can just pass the pointer
+        // of a method emulating the Consumer Interface.
         todoService.addTaskListener(this::onTaskEvent);
-
+        
+        // adding the pre-existing tasks
+        todoService.getTaskList().forEach(task->taskList.add(new TodoTaskWrapper(task)));
+        
+        // setting the cell factory
         listView.setCellFactory(this::createCell);
 
+        // setting the items of the view
         listView.setItems(taskList);
+        
+        // when ENTER is pressed, we want to add the todo task so we listen to every 
+        // key released event.
         textField.addEventHandler(KeyEvent.KEY_RELEASED, this::onKeyTyped);
-        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> System.out.println(newValue));
+        
+      
     }
 
+    // our factory is just a method that creates a TodoTaskCell
     private ListCell<TodoTaskWrapper> createCell(ListView<TodoTaskWrapper> listView) {
-        System.out.println("creating a new cell");
         return new TodoTaskCell();
     }
 
+    // 
     private void addTask() {
 
         // the todo service will later notify the UI that a task has been added
@@ -81,7 +112,8 @@ public class TodoUi extends BorderPane {
         Events
      */
     public void onTaskEvent(TodoEvent event) {
-
+        
+        // We check the type of event
         if (event.getType() == TodoEventType.TASK_ADDED) {
             taskList.add(new TodoTaskWrapper(event.getTask()));
         } else if (event.getType() == TodoEventType.TASK_DELETED) {
@@ -114,7 +146,22 @@ public class TodoUi extends BorderPane {
     }
 
     /*
-        todo task cell
+        This is a TodoTaskCell.
+        After hours struggling with ListCell and some Google researches,
+        it cames out that this way of creating ListCell is the more
+        stable and avoid most of common mistakes.
+        
+        In this case, we don't override the updateItem method.
+        Instead, we just change the graphics whenever an item
+        is mofidied.
+    
+        Let's come back now to our cell,
+        It's a Hbox with a Label and checkbox inside.
+        We want the checkbox to be updated when changing a
+        TodoWrapper and we want our TodoWrapper to change
+        when checking a Checkbox so we need to do a birectional binding.
+    
+       
      */
     public class TodoTaskCell extends ListCell<TodoTaskWrapper> {
 
@@ -129,13 +176,15 @@ public class TodoUi extends BorderPane {
 
         public TodoTaskCell() {
             box.getStyleClass().add("list-cell");
-
+            
+            // 
             itemProperty().addListener(this::onItemChanged);
-
         }
 
         public void onItemChanged(Observable obs, TodoTaskWrapper oldValue, TodoTaskWrapper newValue) {
-
+            
+            // 
+            
             // a same cell can be used for different Wrapper, must make sure to desactivate previous bidirectional binding
             if (oldValue != null) {
                 checkbox.selectedProperty().unbindBidirectional(oldValue.doneProperty());
@@ -155,6 +204,5 @@ public class TodoUi extends BorderPane {
 
             }
         }
-
     }
 }

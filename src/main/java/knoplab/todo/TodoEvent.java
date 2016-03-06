@@ -8,7 +8,7 @@ package knoplab.todo;
 import javafx.concurrent.Task;
 
 /**
- *
+ *  Event specifying a type and the concerned task
  * @author cyril
  */
 public class TodoEvent {

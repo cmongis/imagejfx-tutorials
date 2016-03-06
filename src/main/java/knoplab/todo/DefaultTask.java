@@ -29,7 +29,7 @@ public class DefaultTask implements TodoTask{
 
     @Override
     public void setDone(boolean isDone) {
-        System.out.println("setting is done");
+        System.out.println("setting is done = "+isDone);
         this.isDone = isDone;
     }
 

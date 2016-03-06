@@ -26,6 +26,8 @@ public class TodoTaskWrapper implements TodoTask {
         this.task = task;
 
         // the BeanPropertyBuilder creates a property that calls the getters and setters of the task object;
+        // In other words, each time the property is changed, it will called setDone or getIsDone from
+        // the wrapped task.
         try {
             this.doneProperty = new JavaBeanObjectPropertyBuilder<>().bean(task).name("done").build();
             this.textProperty = new JavaBeanStringPropertyBuilder().bean(task).name("text").build();
@@ -47,15 +49,16 @@ public class TodoTaskWrapper implements TodoTask {
 
     @Override
     public void setDone(boolean isDone) {
-        // any change of done will notify
-        // the property listener
+        // When setting the property, it will non only 
+        // change the wrapped task, but it will
+        // also automatically notify all the listeners
+        // of the "done" property.
         doneProperty.setValue(isDone);
     }
 
     @Override
     public void setText(String text) {
-        // any change of text will notify
-        // the property listeners
+        // same as before
         textProperty.setValue(text);
     }
 
