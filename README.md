@@ -171,9 +171,154 @@ SciJava is a scientific platform allowing you to deal with plugins and dependanc
 
 ### How it works
 
+SciJava is initialized by creating a **Context** object. When, this object is created, it scans the code searching for **Services** and create instances of them automatically. The **Context** can now inject previously created service to any other object.
+
+In practice, it allows several object to share the same instances of services. It also avoid to pass every servcie to each object.
+
+Services can be specified using **Interfaces** and their implementation swapped using priority.
+
+Let's create a Service that will do hold some data. First we specify the Service behaviour
+
+~~~java
+public interface MyDataService extends Service{
+	
+	void addData(Data data);
+	List<Data> getDataList();
+	void removeData(Data data);
+}
+~~~
+
+Then, we create a quick implementation of the DataService :
+
+~~~java
+@Plugin(type = MyDataSetvice.class,priority = 10)
+public class DefaultDataService extends AbstractService implements MyDataService {
+	List<Data> dataList = ...
+	
+	public void addData(Data data) {
+		dataList.add(data);
+	}
+	...
+	List<Data> getDataList() {
+		return dataList;
+	}
+	void removeData(Data data) { ...}
+}
+~~~
+
+Adding the Annotation **@Plugin** will cause the context to load and instanciate the Service when created.
+
+Now if we want to use the Service in a Ui Object or in an other service.
+
+~~~java
+public class UiMain {
+	
+	@Parameter
+	DataService dataService;
+
+	@Parameter
+	OtherService otherService;
+	
+	...
+
+}
+~~~
+
+
+~~~java
+public static void main(String... args) {
+	
+	Context context = new Context();
+	UiMain uiMain = new UiMain();
+	
+	// when injecting the context,
+	// all the attributes annoted with
+	// @Parameter will be pointed
+	// to the corresponding service
+	context.inject(uiMain);
+
+	
+}
+
+~~~
+As you can see, the **DataService** and the **OtherService** where not passed as parameter when constructing the UiMain. The UiMain could start using more services without its instanciation has to changed which is quite useful when dealing with applications that get more and more complex.
+
+
 ### Important services
 
 #### EventService
+
+The EventService allows you to create you own events and have automatic Event Binding. Let's create an event for our DataService :
+
+~~~java
+public class DataAddedEvent extends SciJavaEvent{
+	public final Data data;
+	public DataAddedEvent(Data data) {
+		this.data  = data;
+	}
+	public Data getData() {
+		return this.data;
+	}
+}
+~~~
+Now that our event is created, we can change our **UiMain** so it's notified each time a **Data** is added to the **DataService**.
+
+First we modify our implementation of **DataService** so it can emit events.
+
+~~~java
+@Plugin(type = DataSetvice.class,priority = 10)
+public class DefaultDataService extends AbstractService implements MyDataService {
+	List<Data> dataList = ...
+	
+	@Parameter
+	EventService eventService;
+	
+	public void addData(Data data) {
+		dataList.add(data);
+		
+		// now the event service will notify all
+		// injected object that listen for DataEventEvents
+		eventService.publish(new DataAddedEvent(data));
+	}
+	...
+	List<Data> getDataList() {
+		return dataList;
+	}
+	void removeData(Data data) { ...}
+}
+~~~
+
+Now we make our **UiMain** listen for **DataAddedEvent**. To do so, one just need to add the annotation **@EventHandler** to a method that accept as parameter a **SciJavaEvent**.
+
+~~~java
+public class UiMain {
+	
+	@Parameter
+	DataService dataService;
+
+	@Parameter
+	OtherService otherService;
+	
+	...
+	
+	@FXML
+	ListView<Data> listView;
+	
+	
+	@EventHandler
+	public onDataEventAdded(DataAddedEvent event) {
+		listView.getItems().add(data);
+	}
+}
+~~~
+
+Voila ! The main advantage of this procedure is that now, several UI can listen use the same service and listen to the same events by only using a common entry point : the **Context**.
+
+#### Excercise 4
+
+
+Create a new branch of your repository and switch to it. Modify your TODO app in a way that the model is inside a SciJava service. The service should be injected using a **Context** element. The service should also already contain a certain number of data. It means the view will load the already containted data to it. Modification of the model should be handle via SciJavaEvents.
+
 
 #### PluginService
 
@@ -182,9 +327,7 @@ SciJava is a scientific platform allowing you to deal with plugins and dependanc
 ### Create your own plugin
 
 
-#### Excercise 4
 
-Modify your TODO app in a way that the model is inside a SciJava service. The service should be injected using a **Context** element. The service should also already contain a certain number of data.
 
 
 ## Structure of ImageJ FX
