@@ -314,6 +314,12 @@ public class UiMain {
 
 Voila ! The main advantage of this procedure is that now, several UI can listen use the same service and listen to the same events by only using a common entry point : the **Context**.
 
+#### Excercise 4
+
+
+Create a new branch of your repository and switch to it. Modify your TODO app in a way that the model is inside a SciJava service. The service should be injected using a **Context** element. The service should also already contain a certain number of data. It means the view will load the already containted data to it. Modification of the model should be handle via SciJavaEvents.
+
+
 #### PluginService
 
 ### Create a Service
@@ -321,9 +327,7 @@ Voila ! The main advantage of this procedure is that now, several UI can listen 
 ### Create your own plugin
 
 
-#### Excercise 4
 
-Modify your TODO app in a way that the model is inside a SciJava service. The service should be injected using a **Context** element. The service should also already contain a certain number of data.
 
 
 ## Structure of ImageJ FX
