@@ -325,13 +325,110 @@ Create a new branch of your repository and switch to it. Modify your TODO app in
 
 #### PluginService
 
+The PluginService allows you to manage your own plugin.
 
 ### Create your own plugin
 
+Creating your own plugin is quite easy. You first create a interface extending **SciJavaPlugin**, then create implementation of this interface which you can load using the plugin service.
 
+Let's say we want to propose plugins that act on String object.
 
+First we specify the behaviour of a plugin through an interface :
 
+~~~java 
+public interface TextPlugin extends SciJavaPlugin {
+	public String processText(String input);
+}
+~~~
 
+Then, we can start creating text processing plugins. For that, we must create a class that implements **TextPlugin** and has the annotation **@Plugin** showing the **TextPlugin.class** type :
+
+~~~java
+@Plugin( type=TextPlugin.class, label = "As upper case")
+public class CapitalizeText implements TextPlugin {
+	
+	@Parameter
+	OtherService otherService; // services are injected automatically when instanciating a plugin with the plugin service;
+	
+	// put the text on upper case
+	public void processText(String input) {
+		return input.toUpperCase();
+	}
+}
+~~~
+
+**Note** : the @Plugin annotation also proposes you to specify name and labels that can be parsed and used for Ui purpose.
+
+Now we want our Ui to load text processing plugin and propose them as buttons.
+
+~~~java
+public TextProcessingToolBar extends ToolBar {
+	
+	@Parameter
+	PluginService pluginService;
+	
+	// We force the presence of the SciJava Context
+	// when creating the tool bar.
+	public TextProcessingToolBox(Context context) {
+		
+		// the context is injected by the toolbox itself
+		context.inject(this);
+		
+		pluginService
+		.getPluginsOfType(TextPlugin.class)
+		.forEach(this::addPlugin);
+		
+	}
+	
+	public void addPlugin(PluginInfo<TextPlugin> pluginInfo) {
+		// A toolbar is just a list of buttons.
+		// We create a button for each plugin.
+		
+		//the label of the button is taken from the plugin info object returned by the plugin service
+		Button button = new Button(pluginInfo.getLabel());
+		
+		// an instance of the plugin is created from the plugin info object
+		TextPlugin plugin = pluginInfo.createInstance();
+		
+		// when clicking on the button,
+		// the method apply Plugin is called
+		button.setOnAction(actionEvent->applyPlugin(plugin));
+		
+		// we add the button to the tool bar
+		getItems().add(button);
+	}
+	
+	public void applyPlugin(TextPlugin plugin) {
+		
+		
+		// The plugin is already loaded.
+		// method that apply the plugin on the view or model or wherever
+		
+		...
+		
+		String input = view.getCurrentText();
+		view.setResult(plugin.processText(input));
+		
+		...
+	}
+}
+~~~
+
+#### Exercise 5
+
+Modify your TODO App with the following goals in mind : 
+
+ - the "Set all task done" button and "Remove" button are just plugins.
+ - Add a two other plugins that allows you to save or load tasks into JSON.
+ - The plugins should never touch any element of your controller, but should only interact with your SciJavaService managing your model (I remind you that the **PluginService** injects the SciJavaServices inside the **Plugin** after instanciating them).
+ - The model shouldn't hold any JavaFX related object.
+ 
+ **Tips**
+ - create a **View-Model** (a model for the view). It's a model inside the controller that mimics the changes of the real model but holds JavaFX specific elements. (The Wrapper technic was a kind of View-Model.
+ - Use JSON Jackson librariy 2.4 with data-binding
+ - You can try to create a implementation of Property<Boolean> that holds a pointer to your SciJavaService and execute action directly on it.
+
+ 
 ## Structure of ImageJ FX
 ImageJ FX is made of Activities, UiPlugin, and Services.
 
