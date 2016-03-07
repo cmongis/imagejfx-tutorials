@@ -1,7 +1,7 @@
 # All you need to know to work on ImageJ FX (UI Edition)
 This document contains a set of resources and knowledge required to become an efficient UI Programmer for ImageJFX. Basic knowledge of Java Programming is requested in order to complete this guide. Multiple exercises are proposed and should be executed following [Java Programming style conventions](http://geosoft.no/development/javastyle.html).
 
-
+By **Cyril MONGIS**, 2016
 
 
 
@@ -171,16 +171,19 @@ SciJava is a scientific platform allowing you to deal with plugins and dependanc
 
 ### How it works
 
-SciJava is initialized by creating a **Context** object. When, this object is created, it scans the code searching for **Services** and create instances of them automatically. The **Context** can now inject previously created service to any other object.
+SciJava is initialized and creates a **Context** object. When, this object is created, SciJava scans the code searching for **SciJavaServices** and create instances of one of them automatically. SciJava can now inject previously created service to any other object.
 
-In practice, it allows several object to share the same instances of services. It also avoid to pass every servcie to each object.
+In practice, it allows several objects to share the same instance of a service. It also avoid to pass every service to each object when instanciating them. One other advantage is that instances of a Service can be swapped inside the Context using a priority system.
 
-Services can be specified using **Interfaces** and their implementation swapped using priority.
+### Create a custom Service
 
-Let's create a Service that will do hold some data. First we specify the Service behaviour
+
+Services should be specified using a **Interface** and its default implementation. Objects that want to use the service should request injection of the inteface while SciJava will select which implementation to inject.
+
+Let's create a Service that will hold some data. First we specify the Service behaviour with an interface that extends **SciJavaService**
 
 ~~~java
-public interface MyDataService extends Service{
+public interface CustomDataService extends SciJavaService{
 	
 	void addData(Data data);
 	List<Data> getDataList();
@@ -188,11 +191,11 @@ public interface MyDataService extends Service{
 }
 ~~~
 
-Then, we create a quick implementation of the DataService :
+Then, we create an implementation of the **CustomDataService** with the annotation  **@Plugin** so SciJava loads it automatically.
 
 ~~~java
-@Plugin(type = MyDataSetvice.class,priority = 10)
-public class DefaultDataService extends AbstractService implements MyDataService {
+@Plugin(type = SciJavaService.class,priority = 10)
+public class DefaultCustomDataService extends AbstractService implements CustomDataService {
 	List<Data> dataList = ...
 	
 	public void addData(Data data) {
@@ -206,15 +209,15 @@ public class DefaultDataService extends AbstractService implements MyDataService
 }
 ~~~
 
-Adding the Annotation **@Plugin** will cause the context to load and instanciate the Service when created.
+Adding the Annotation **@Plugin** will cause  **SciJava** to load and instanciate the service automatically. The **priority** variable specifies which service should be instantiated first. It can be used to make sure some services are instanciated before other ones. Thus, if there is two implementations of a same service, SciJava will inject the implementation with the highest priortiy, which can be quite useful if someone wants to override an implementation of a particular service in the whole application. 
 
-Now if we want to use the Service in a Ui Object or in an other service.
+Now we want to use our **CustomDataService** inside the Ui Object in addition of other services. When declaring our class, we add the name of the **interface** along with the annotation @Parameter so the context object knows which type service to inject : 
 
 ~~~java
 public class UiMain {
 	
 	@Parameter
-	DataService dataService;
+	CustomDataService dataService;
 
 	@Parameter
 	OtherService otherService;
@@ -228,20 +231,20 @@ public class UiMain {
 ~~~java
 public static void main(String... args) {
 	
-	Context context = new Context();
+	SciJava context = new SciJava();
 	UiMain uiMain = new UiMain();
 	
 	// when injecting the context,
 	// all the attributes annoted with
 	// @Parameter will be pointed
 	// to the corresponding service
-	context.inject(uiMain);
+	scijava.context().inject(uiMain);
 
 	
 }
 
 ~~~
-As you can see, the **DataService** and the **OtherService** where not passed as parameter when constructing the UiMain. The UiMain could start using more services without its instanciation has to changed which is quite useful when dealing with applications that get more and more complex.
+As you can see, the **CustomDataService** and the **OtherService** where not passed as parameter when constructing the UiMain but *injected* by the SciJava. It is quite useful for ui elements that deal with a lot of different services.
 
 
 ### Important services
@@ -266,8 +269,8 @@ Now that our event is created, we can change our **UiMain** so it's notified eac
 First we modify our implementation of **DataService** so it can emit events.
 
 ~~~java
-@Plugin(type = DataSetvice.class,priority = 10)
-public class DefaultDataService extends AbstractService implements MyDataService {
+@Plugin(type = SciJavaService.class,priority = 10)
+public class DefaultDataService extends AbstractService implements DataService {
 	List<Data> dataList = ...
 	
 	@Parameter
@@ -322,14 +325,110 @@ Create a new branch of your repository and switch to it. Modify your TODO app in
 
 #### PluginService
 
-### Create a Service
+The PluginService allows you to manage your own plugin.
 
 ### Create your own plugin
 
+Creating your own plugin is quite easy. You first create a interface extending **SciJavaPlugin**, then create implementation of this interface which you can load using the plugin service.
 
+Let's say we want to propose plugins that act on String object.
 
+First we specify the behaviour of a plugin through an interface :
 
+~~~java 
+public interface TextPlugin extends SciJavaPlugin {
+	public String processText(String input);
+}
+~~~
 
+Then, we can start creating text processing plugins. For that, we must create a class that implements **TextPlugin** and has the annotation **@Plugin** showing the **TextPlugin.class** type :
+
+~~~java
+@Plugin( type=TextPlugin.class, label = "As upper case")
+public class CapitalizeText implements TextPlugin {
+	
+	@Parameter
+	OtherService otherService; // services are injected automatically when instanciating a plugin with the plugin service;
+	
+	// put the text on upper case
+	public void processText(String input) {
+		return input.toUpperCase();
+	}
+}
+~~~
+
+**Note** : the @Plugin annotation also proposes you to specify name and labels that can be parsed and used for Ui purpose.
+
+Now we want our Ui to load text processing plugin and propose them as buttons.
+
+~~~java
+public TextProcessingToolBar extends ToolBar {
+	
+	@Parameter
+	PluginService pluginService;
+	
+	// We force the presence of the SciJava Context
+	// when creating the tool bar.
+	public TextProcessingToolBox(Context context) {
+		
+		// the context is injected by the toolbox itself
+		context.inject(this);
+		
+		pluginService
+		.getPluginsOfType(TextPlugin.class)
+		.forEach(this::addPlugin);
+		
+	}
+	
+	public void addPlugin(PluginInfo<TextPlugin> pluginInfo) {
+		// A toolbar is just a list of buttons.
+		// We create a button for each plugin.
+		
+		//the label of the button is taken from the plugin info object returned by the plugin service
+		Button button = new Button(pluginInfo.getLabel());
+		
+		// an instance of the plugin is created from the plugin info object
+		TextPlugin plugin = pluginInfo.createInstance();
+		
+		// when clicking on the button,
+		// the method apply Plugin is called
+		button.setOnAction(actionEvent->applyPlugin(plugin));
+		
+		// we add the button to the tool bar
+		getItems().add(button);
+	}
+	
+	public void applyPlugin(TextPlugin plugin) {
+		
+		
+		// The plugin is already loaded.
+		// method that apply the plugin on the view or model or wherever
+		
+		...
+		
+		String input = view.getCurrentText();
+		view.setResult(plugin.processText(input));
+		
+		...
+	}
+}
+~~~
+
+#### Exercise 5
+
+Modify your TODO App with the following goals in mind : 
+
+ - the "Set all task done" button and "Remove" button are just plugins.
+ - Add a two other plugins that allows you to save or load tasks into JSON.
+ - The plugins should never touch any element of your controller, but should only interact with your SciJavaService managing your model (I remind you that the **PluginService** injects the SciJavaServices inside the **Plugin** after instanciating them).
+ - The model shouldn't hold any JavaFX related object.
+ 
+ **Tips**
+ - create a **View-Model** (a model for the view). It's a model inside the controller that mimics the changes of the real model but holds JavaFX specific elements. (The Wrapper technic was a kind of View-Model.
+ - Use JSON Jackson librariy 2.4 with data-binding
+ - You can try to create a implementation of Property<Boolean> that holds a pointer to your SciJavaService and execute action directly on it.
+
+ 
 ## Structure of ImageJ FX
 ImageJ FX is made of Activities, UiPlugin, and Services.
 
