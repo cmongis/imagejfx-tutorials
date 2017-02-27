@@ -5,73 +5,113 @@ By **Cyril MONGIS**, 2016
 
 
 
-## Mastering the project tools
+## The tools used in the project
 
-### Netbeans
+During ImageJFX development, you will have to use three main tools : Netbeans for development, Maven to deal with the package dependancies, and Git hub for source code synchronization.
 
-Netbean is now the main editor used to edit ImageJFX. Download it and install it.
+### 1. Downlowd Netbeans
+
+Netbean is now the main editor used to work on ImageJFX. Download it and install it. Netbeans includes plugins that offer Maven and Git related actions directly the software. It becomes then your main working environment.
 
 ### Maven
 
-Maven is the dependancy management software. It's also included in Netbeans. It deals with Java dependancies avoiding the developer to download them manually. It's pretty useful for sharing your work because new comers just have to get the project file and Maven will download all the dependancies for them.
+Maven takes care of dependancy management for Java projects. In the old times, developers would browse the internet and download manually the JAR libraries that they would need for their project. When sharing the code of the projects, the developer had to either include the JAR he used, or let the other developers the task to seek for themselves the missing dependancies. Maven avoids all this complication by taking care of indexing and and dowloading all the dependancies associated to the project. It connects itself to a database that indexes many important libraries. The developer adds the informations of the library required for the project while Maven takes care of downloading them.
+This functionnality eases code sharing for two main reasons. First the size of the files to share is smalled since only a text file containing the list of dependancies is necessary. Second, new comers dont' need to browse the whole internet in order to find the corresponding dependancies because Maven will download them automatically.
 
-#### Exercise 1
+#### (〜￣▽￣)〜 Exercise 1
 
-Create a Maven Java Application project with Netbeans and add the libraries ControlsFX and scijava-common as dependancy.
+Create a Maven Java Application project with Netbeans and add the libraries **ControlsFX** and **scijava-common** as dependancy.
 
 ### Github
 
-Github allows us to share code modification among a group of people. It's fairly used in the project.
+Github is a famous git platform host git projects. Git allows developers to share code modifications and synchronize them efficiently.
 
 For Github introduction, the internet is full of them. I would advice you to have a deep understanding of the concepts **commit**, **branch** and **checkout**. You should be able to tell exactly what happen during each of these processes. A lot of time can be lost because of misunderstanding of the Git machinery, making he team spend more time trying to recover lost changes and solve conflicts.
 
-#### Exercise 2
+#### (〜￣▽￣)〜 Exercise 2.1
 
 Create a Github account and a repository called **imagejfx-training**. You will commit the exercises there so I can evaluate them. Commit your maven project to this repository using Netbeans.
 
+### DCEVM
+
+DCEVM is a debugging virtual machine. You can launch a app and modify the code as the application runs. When you save the modification, the code of the running app is automatically updated, preventing you to relaunch the app to see the modifications of the code.
+
+#### (〜￣▽￣)〜 Exercise 2.2
+
+Download and install DCEVM on your computer as **altvm**. Make sure Netbeans can use it.
+
 ## Java basics
 
-### Functional interfaces and Lambdas
+### Functional interfaces, Lambdas and method referencing
 
-Functional interface are a new feature of Java 8 and are fairly used in the project.
+Functional interfaces, Lambdas and Method Referencing are new features introduced in Java 8 and are fairly used in the project.
 
 There is a fair amount of literature over Functional interfaces. You should first get a grasp of the concept of Functional Interface :
 
  - [JavaZone tutorial](https://dzone.com/articles/introduction-functional-1)
  - [O'Reilly's radar](http://radar.oreilly.com/2014/08/java-8-functional-interfaces.html)
+ - [An overview of Method References](https://dzone.com/articles/methodreference)
 
-But most of the time, the 4 FI **Runnable**, **Callable**, **Consumer** and **Callback** are enough in most of the project. 
+But most of the time, the 4 following functionnaly interfaces **Runnable**, **Callable**, **Consumer** and **Callback** are enough in most of the project. Very few functionnaly interfaces where created in the project.
 
-But one of the main advantage of Functional Interfaces is that a method following the functional interface requirement can be passed as parameters instead of an object implementing this interface.
+One of the main advantage of Functional Interfaces is that it can be used in pair with method referencing. A method that follows the requirement of a the functional interface can be passed as parameters instead of a lambda or an anonymous object.
 
-For instance, JavaFX Properties can have **ChangeListener** which are Functional interface.
+For instance, changes of JavaFX Properties can be listened (Observer Pattern) using a **ChangeListener** which is a Functional interface.
 
 The classic code to add a listener to a property would be :
 
 ~~~java
-
-Property<String> nameProperty = ...
-
-property.addChangeListener(new ChangeListener<String>() {
-
-	public void changed(Observable obs, String oldValue, String newValue) {
-		
-		// do some process wit the changed values
+public class MyClass() {
 	
+	private Property<String> nameProperty = ...
+	
+	// constructor
+	public MyClass() {
+	
+		// creating an object that implements the functionnal interface ChangeListener
+		property.addChangeListener(new ChangeListener<String>() {
+			public void changed(Observable obs, String oldValue, String newValue) {
+				// display the new value at each changes
+				System.out.println(newValue);
+			}
+		});
+		
 	}
-});
-
+}
 ~~~
 
-Thanks to Java 8, the listener can be a method of the class :
+A lamda version of this code could be :
+
+~~~java
+public class MyClass() {
+	
+	private Property<String> nameProperty = ...
+	
+	// constructor
+	public MyClass() {
+	
+		// creating an object that implements the functionnal interface ChangeListener
+		property.addChangeListener(
+			(obs, oldValue,newValue)-> {
+				// display the new value at each changes
+				System.out.println(newValue);
+			});
+		
+	}
+}
+~~~
+As you can see the lambda must specify all the parameters required for the functionnal interface.
+
+When using lambdas, instead of creating a anonymous class, the listener instanciated by refering to the method :
 
 ~~~java
 public class MyClass() {
 
 	Property<String> nameProperty = new SimpleStringProperty();
 
-	// initializing
+	// constructor
 	public MyClass() {
+		// method reference
 		nameProperty.addListener(this::onNameChanged);
 	}
 	
@@ -80,8 +120,17 @@ public class MyClass() {
 	}
 }
 ~~~
+Note that it would also be possible to write : 
 
-You'll see later that it's quite useful in debugging mode and keeps the code well organized inside the controller.
+~~~java
+
+ChangeListener<String> changeListener = this::onNameChanged;
+nameProperty.addListener(changeListener);
+
+
+~~~
+
+Method Referencing is quite useful for live debugging because methods can be updated in live using DCEVM, which is not the case with lambdas. Thus, it keeps the code a bit cleaner.
 
 ### Streams
 Streams are pretty useful to go through list of event and execute parallel processing.
@@ -136,6 +185,29 @@ new Thread(areAllFilesDirectories).start();
 
 ~~~
 
+#### (〜￣▽￣)〜 Excercise 2.3
+
+Create a class FunctionnalTask that take a functionnal interface as input and execute it in the **call()** method.
+
+~~~java
+public class Main() {
+
+	// main method to test the class
+	public static void main(String... args) throws Exception {
+	
+		FunctionnalTask<String> task = new FunctionnalTask(this::getName);
+		new Thread(task).start();
+		System.out.println("Waiting for it");
+		String name = task.get();
+		
+	}
+	
+	// referenced method
+	public static String getName() throws Exception {
+		Threads.sleep(3000);
+		return "My name is";
+	}
+~~~
 
 ## JavaFX and FXML
 
@@ -147,7 +219,7 @@ There is plenty of tutorial available for FXML. Follow the following tutorial :
 
 ### Exercise 3
 
-Create a TODO list javafx app. The UI is composed of
+Create a TODO list JavaFX app. The UI is composed of
 
 - **ListView** that displays the task
 - a **TextField** allowing to enter new task
@@ -163,7 +235,8 @@ Publish it on your imagejfx-training github account.
  - Create a complete diagram displaying the different interactions and consequences of the interactions on the model and on the interface (stay far from any implementation details)
  - Create a separate class that contains the whole the model
  - Use interfaces to specify the model
- - Put padding inside your interface to let it breath
+ - Put paddings inside your UI to let it breath
+ - Search for some UX Design / UI Design articles
 
 ## SciJava
 
