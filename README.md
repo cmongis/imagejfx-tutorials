@@ -13,30 +13,30 @@ During ImageJFX development, you will have to use three main tools : Netbeans fo
 
 Netbean is now the main editor used to work on ImageJFX. Download it and install it. Netbeans includes plugins that offer Maven and Git related actions directly the software. It becomes then your main working environment.
 
-### Maven
+### 2. Master Maven
 
 Maven takes care of dependancy management for Java projects. In the old times, developers would browse the internet and download manually the JAR libraries that they would need for their project. When sharing the code of the projects, the developer had to either include the JAR he used, or let the other developers the task to seek for themselves the missing dependancies. Maven avoids all this complication by taking care of indexing and and dowloading all the dependancies associated to the project. It connects itself to a database that indexes many important libraries. The developer adds the informations of the library required for the project while Maven takes care of downloading them.
 This functionnality eases code sharing for two main reasons. First the size of the files to share is smalled since only a text file containing the list of dependancies is necessary. Second, new comers dont' need to browse the whole internet in order to find the corresponding dependancies because Maven will download them automatically.
 
-#### (〜￣▽￣)〜 Exercise 1
+#### Exercise 1
 
 Create a Maven Java Application project with Netbeans and add the libraries **ControlsFX** and **scijava-common** as dependancy.
 
-### Github
+### 3. Commit on Github
 
 Github is a famous git platform host git projects. Git allows developers to share code modifications and synchronize them efficiently.
 
 For Github introduction, the internet is full of them. I would advice you to have a deep understanding of the concepts **commit**, **branch** and **checkout**. You should be able to tell exactly what happen during each of these processes. A lot of time can be lost because of misunderstanding of the Git machinery, making he team spend more time trying to recover lost changes and solve conflicts.
 
-#### (〜￣▽￣)〜 Exercise 2.1
+#### Exercise 2.1
 
 Create a Github account and a repository called **imagejfx-training**. You will commit the exercises there so I can evaluate them. Commit your maven project to this repository using Netbeans.
 
-### DCEVM
+### 4. Live debug with DCEVM
 
 DCEVM is a debugging virtual machine. You can launch a app and modify the code as the application runs. When you save the modification, the code of the running app is automatically updated, preventing you to relaunch the app to see the modifications of the code.
 
-#### (〜￣▽￣)〜 Exercise 2.2
+#### Exercise 2.2
 
 Download and install DCEVM on your computer as **altvm**. Make sure Netbeans can use it.
 
@@ -185,7 +185,7 @@ new Thread(areAllFilesDirectories).start();
 
 ~~~
 
-#### (〜￣▽￣)〜 Excercise 2.3
+#### Excercise 2.3
 
 Create a class FunctionnalTask that take a functionnal interface as input and execute it in the **call()** method.
 
@@ -497,9 +497,9 @@ Modify your TODO App with the following goals in mind :
  - The model shouldn't hold any JavaFX related object.
  
  **Tips**
- - create a **View-Model** (a model for the view). It's a model inside the controller that mimics the changes of the real model but holds JavaFX specific elements. (The Wrapper technic was a kind of View-Model.
- - Use JSON Jackson librariy 2.4 with data-binding
- - You can try to create a implementation of Property<Boolean> that holds a pointer to your SciJavaService and execute action directly on it.
+ - create a **View-Model** (a model for the view). It's a model inside the controller that mimics the changes of the real model but holds JavaFX specific elements (the "Wrapper approach" was a kind of View-Model).
+ - Use JSON Jackson librariy 2.4+ with data-binding
+ - You can try to create a implementation of **Property<Boolean>** that holds a pointer to your SciJavaService and execute action directly on it.
 
  
 ## Structure of ImageJ FX
