@@ -1,0 +1,24 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Mar 27, 2017, 1:04:19 PM
+    Author     : cyril
+*/
+
+
+
+.task-cell.important {
+    -fx-background-color:derive(red,120%);
+}
+.task-cell.important:selected {
+    -fx-background-color:derive(red,-20%);
+}
+.task-cell.tomorrow {
+    -fx-background-color:derive(yellow,120%);
+}
+.task-cell.tomorrow:selected {
+    -fx-background-color:derive(yellow,-30%);
+}
