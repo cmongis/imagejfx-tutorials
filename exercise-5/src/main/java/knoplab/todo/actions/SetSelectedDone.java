@@ -36,7 +36,7 @@ public class SetSelectedDone implements TodoAction{
         .getSelectedTasks()
                 .stream()
                 .peek(task->task.setDone(true))
-                .map(TodoModifiedEvent::new)
+                .map(task-> new TodoModifiedEvent(task))
                 .forEach(eventService::publish);
         
     }

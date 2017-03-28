@@ -14,6 +14,8 @@ import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
 
 /**
+ * This Service get the view with the highest priority and shows it on the
+ * screen. The selection is then queried from the view itself.
  *
  * @author cyril
  */
@@ -28,21 +30,18 @@ public class DefaultTodoViewService extends AbstractService implements TodoViewS
 
     TodoView currentView;
 
-     List<TodoView> viewList;
+    List<TodoView> viewList;
 
-    
-    
     @Override
     public void showView() {
 
-        if(viewList == null) {
+        if (viewList == null) {
             viewList = pluginService.createInstancesOfType(TodoView.class);
             if (viewList.size() == 0) {
                 System.out.println("No view found");
             } else {
                 TodoView view = viewList.get(0);
                 currentView = view;
-
 
                 view.init();
                 view.show();

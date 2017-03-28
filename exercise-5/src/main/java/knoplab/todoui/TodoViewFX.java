@@ -22,8 +22,10 @@ import org.scijava.plugin.Plugin;
 @Plugin(type = TodoView.class)
 public class TodoViewFX extends Application implements TodoView {
 
+    // the pane is private because... damn JavaFX
     static private TodoPane pane;
 
+    // also has to be static because damn JavaFX
     @Parameter
     static private Context context;
     
@@ -43,10 +45,12 @@ public class TodoViewFX extends Application implements TodoView {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        // creating the pane and injecting things
+        // creating our pane and injecting things
         pane = new TodoPane();
 
+        
         context.inject(pane);
+        
         
         pane.init();
         
@@ -73,11 +77,13 @@ public class TodoViewFX extends Application implements TodoView {
 
     @Override
     public void refresh() {
+        // refresh the pane
         pane.refresh();
     }
 
     @Override
     public void select(List<TodoTask> taskList) {
+        // ask the pane to select this list of task
         pane.select(taskList);
     }
 

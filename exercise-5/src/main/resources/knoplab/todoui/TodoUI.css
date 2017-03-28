@@ -17,8 +17,8 @@ and open the template in the editor.
     -fx-background-color:derive(red,-20%);
 }
 .task-cell.tomorrow {
-    -fx-background-color:derive(yellow,120%);
+    -fx-background-color:derive(green,120%);
 }
 .task-cell.tomorrow:selected {
-    -fx-background-color:derive(yellow,-30%);
+    -fx-background-color:derive(green,-30%);
 }

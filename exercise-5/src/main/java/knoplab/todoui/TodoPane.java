@@ -59,23 +59,24 @@ public class TodoPane extends BorderPane implements TodoView {
     @FXML
     ListView<TodoTask> listView;
 
+    /**
+     * the toolbar holding our buttons
+     */
     @FXML
     ToolBar buttonBar;
 
+    /**
+     * contains all the cell list ever created (may lead to memory leaks, not
+     * recommended)
+     */
     List<TodoTaskCell> cellList = new ArrayList<>();
 
+    /**
+     * Holds the priority possibilities
+     */
     @FXML
     ComboBox<TaskPriority> priorityComboBox;
 
-    /*
-        Here are the big modifications :
-        We don't instanciate the service anymore.
-        we let the context injection the responsability.
-        
-        Now the TodoService don't implement is own listening system
-        anymore. We use the Event system provided by SciJava
-   
-     */
     @Parameter
     TodoService todoService;
 
@@ -130,31 +131,33 @@ public class TodoPane extends BorderPane implements TodoView {
         listView.getItems().addAll(todoService.getTaskList());
     }
 
-    private <T> void synchronizeList(List<T> source, List<T> toUpdate) {
+    /*
+        Overriden methods that controls the selection of the view
+    */
+    
+    
+    @Override
+    public void select(List<TodoTask> taskList) {
 
-        if (source.size() == 0) {
-            toUpdate.clear();
-            return;
+        int[] indexes = taskList
+                .stream()
+                .mapToInt(task -> listView.getItems().indexOf(task))
+                .toArray();
+
+        if (indexes.length > 0) {
+            listView.getSelectionModel().selectIndices(indexes[0], indexes);
         }
-
-        for (int i = 0; i != source.size(); i++) {
-
-            if (i >= toUpdate.size()) {
-                toUpdate.add(source.get(i));
-            } else if (source.get(i) == toUpdate.get(i)) {
-                continue;
-            } else {
-
-                toUpdate.set(i, source.get(i));
-            }
-
-        }
-        // deleting all the last ones
-        while (source.size() < toUpdate.size()) {
-            toUpdate.remove(toUpdate.size() - 1);
-        }
-
     }
+
+    @Override
+    public void setSelection(TodoTask task, boolean selection) {
+        if (selection) {
+            listView.getSelectionModel().select(task);
+        } else {
+            listView.getSelectionModel().clearSelection(listView.getItems().indexOf(task));
+        }
+    }
+
 
     /*
         FXML Actions
@@ -169,9 +172,7 @@ public class TodoPane extends BorderPane implements TodoView {
 
     /*
         SciJava Events
-    
-        
-    
+
      */
     @EventHandler
     public void onTaskAdded(TodoAddedEvent event) {
@@ -183,17 +184,19 @@ public class TodoPane extends BorderPane implements TodoView {
         Platform.runLater(this::refreshList);
     }
 
+    /**
+     * If a task has been modified, we find the cell that contain it and refresh
+     * it. Note that the event handler could also be added inside the cell
+     * itself.
+     *
+     * @param event
+     */
     @EventHandler
     public void onTaskModified(TodoModifiedEvent event) {
         cellList
                 .stream()
                 .filter(cell -> cell.getItem() == event.getTask())
                 .forEach(TodoTaskCell::refresh);
-    }
-
-    @EventHandler
-    public void onSelectionChanged(TodoSelectionChangedEvent event) {
-
     }
 
     @Override
@@ -232,7 +235,7 @@ public class TodoPane extends BorderPane implements TodoView {
     }
 
     private void refreshCss(ActionEvent event) {
-
+        
         getStylesheets().clear();
         getStylesheets().add(getClass().getResource("TodoUI.css").toExternalForm());
 
@@ -251,27 +254,6 @@ public class TodoPane extends BorderPane implements TodoView {
     public void refresh() {
         listView.getItems().clear();
         listView.getItems().addAll(todoService.getTaskList());
-    }
-
-    @Override
-    public void select(List<TodoTask> taskList) {
-
-        int[] indexes = taskList.stream()
-                .mapToInt(task -> listView.getItems().indexOf(task))
-                .toArray();
-
-        if (indexes.length > 0) {
-            listView.getSelectionModel().selectIndices(indexes[0], indexes);
-        }
-    }
-
-    @Override
-    public void setSelection(TodoTask task, boolean selection) {
-        if (selection) {
-            listView.getSelectionModel().select(task);
-        } else {
-            listView.getSelectionModel().clearSelection(listView.getItems().indexOf(task));
-        }
     }
 
     @Override
